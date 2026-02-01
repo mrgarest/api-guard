@@ -119,14 +119,14 @@ In Laravel 12, this is done in `bootstrap/app.php`:
 use Garest\ApiGuard\Http\Middleware\HmacMiddleware;
 
 withMiddleware(function (Middleware $middleware) {
-    $middleware->alias(['hmac' => HmacMiddleware::class]);
+    $middleware->alias(['ag.hmac' => HmacMiddleware::class]);
 })
 ```
 
 ### Route
 
 ```php
-Route::middleware('hmac')->get('/orders', function () {
+Route::middleware('ag.hmac')->get('/orders', function () {
     return response()->json(['ok' => true]);
 });
 ```
@@ -134,7 +134,7 @@ Route::middleware('hmac')->get('/orders', function () {
 Middleware with scopes
 
 ```php
-Route::middleware('hmac:read,write')->get('/orders', function () {
+Route::middleware('ag.hmac:read,write')->get('/orders', function () {
     return response()->json(['ok' => true]);
 });
 ```
