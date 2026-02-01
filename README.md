@@ -38,7 +38,7 @@ php artisan migrate
 ## Usage
 
 Currently, ApiGuard only supports HMAC authentication.
-Full instructions on how to set up and use this method can be found by [clicking here](https://github.com/mrgarest/api-guard/docs/hmac).
+Full instructions on how to set up and use this method can be found by [clicking here](https://github.com/mrgarest/api-guard/blob/main/docs/hmac.md).
 
 ## Error Rendering
 
