@@ -30,9 +30,9 @@ class HmacMiddleware
      */
     public function handle(Request $request, Closure $next, string ...$scopes): Response
     {
-        Auth::checkLock(Helper::getIp($request));
-
         try {
+            Auth::checkLock(Helper::getIp($request));
+            
             $data = HmacData::fromRequest($request);
 
             // Checking the request time
@@ -53,7 +53,7 @@ class HmacMiddleware
             }
 
             $request->attributes->set('hmacKey', $hmacKey);
-            
+
             return $next($request);
         } catch (ApiGuardException $e) {
 
