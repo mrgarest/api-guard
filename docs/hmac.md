@@ -74,7 +74,7 @@ const plainSecret = "YOUR_SECRET_KEY";
 const timestamp = Math.floor(Date.now() / 1000).toString();
 const nonce = Math.random().toString(36).substring(2, 18);
 const method = pm.request.method.toUpperCase();
-const path = pm.request.url.getPath().replace(/^\//, "");
+const path = pm.request.url.getPath();
 
 const canonicalString = `${method}\n${path}\n${timestamp}\n${nonce}`;
 const derivedKey = CryptoJS.SHA256(plainSecret).toString();

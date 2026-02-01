@@ -81,7 +81,8 @@ class Hmac
      */
     public function canonicalString(string $method, string $path, int $timestamp, string $nonce): string
     {
-        $normalizedPath = strtolower(trim($path, '/ '));
+        $path = trim($path);
+        $normalizedPath = str_starts_with($path, '/') ? $path : '/' . $path;
 
         return implode("\n", [
             strtoupper(trim($method)),
