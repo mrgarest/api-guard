@@ -3,7 +3,7 @@
     "description": "A lightweight Laravel library for authenticating API clients without using user models",
     "type": "library",
     "license": "MIT",
-    "version": "3.1.2",
+    "version": "1.0.0",
     "homepage": "https://github.com/mrgarest/api-guard",
     "keywords": [
         "Garest",
