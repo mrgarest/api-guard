@@ -61,11 +61,10 @@ class Hmac
      */
     public function checkTime(int $timestamp): void
     {
-        $clientTime = Carbon::createFromTimestampUTC($timestamp);
-        $now = Carbon::now('UTC');
+        $now = Carbon::now()->timestamp;
         $window = config('api-guard.time_window', 30);
 
-        if ($clientTime->diffInSeconds($now) > $window) {
+        if (abs($now - $timestamp) > $window) {
             throw new InvalidTimestampException();
         }
     }
