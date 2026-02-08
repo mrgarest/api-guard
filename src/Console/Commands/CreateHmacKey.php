@@ -1,6 +1,6 @@
 <?php
 
-namespace Garest\ApiGuard\Commands;
+namespace Garest\ApiGuard\Console\Commands;
 
 use Carbon\Carbon;
 use Garest\ApiGuard\Helper;

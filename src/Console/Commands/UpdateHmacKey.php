@@ -1,12 +1,11 @@
 <?php
 
-namespace Garest\ApiGuard\Commands;
+namespace Garest\ApiGuard\Console\Commands;
 
 use Carbon\Carbon;
-use Garest\ApiGuard\Cache\HmacCacheKey;
+use Garest\ApiGuard\Facades\Hmac;
 use Illuminate\Console\Command;
 use Garest\ApiGuard\Models\HmacKey;
-use Illuminate\Support\Facades\Cache;
 
 class UpdateHmacKey extends Command
 {
@@ -83,7 +82,7 @@ class UpdateHmacKey extends Command
         if ($hmacKey->isDirty()) {
             $hmacKey->save();
 
-            Cache::forget(HmacCacheKey::accessKey($accessKey));
+            Hmac::forgetKey($accessKey);
 
             $this->info('✅ HMAC key updated successfully.');
         } else {

@@ -127,7 +127,7 @@ class HmacKey extends Model
     }
 
     /**
-     * Check if the key has one or more scopes.
+     * Checks whether the key has all scopes.
      *
      * @param string|array $scopes Single scope or array of scopes
      * @return bool
@@ -135,7 +135,23 @@ class HmacKey extends Model
     public function hasScope(string|array $scopes): bool
     {
         $scopes = is_array($scopes) ? $scopes : [$scopes];
+        if (empty($scopes)) return true;
 
         return empty(array_diff($scopes, $this->scopes ?? []));
+    }
+
+    /**
+     * Checks whether the key has at least one scope.
+     *
+     * @param string|array $scopes Single scope or array of scopes
+     * @return bool
+     */
+    public function hasAnyScope(string|array $scopes): bool
+    {
+        $scopes = is_array($scopes) ? $scopes : [$scopes];
+        if (empty($scopes)) return true;
+
+        // intersect returns common elements. If the result is not empty, there is a match.
+        return !empty(array_intersect($this->scopes ?? [], $scopes));
     }
 }

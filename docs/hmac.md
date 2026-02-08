@@ -94,10 +94,9 @@ pm.request.headers.add({ key: "Ag-Signature", value: signature });
 You can generate HMAC headers programmatically in Laravel using the `build` method in the `Hmac` class:
 
 ```php
-use Garest\ApiGuard\Hmac;
+use Garest\ApiGuard\Facades\Hmac;
 
-$hmac = new Hmac();
-$hmacData = $hmac->build(
+$hmacData = Hmac::build(
     'YOUR_ACCESS_KEY',
     'YOUR_SECRET_KEY',
     'METHOD',
@@ -107,23 +106,9 @@ $hmacData = $hmac->build(
 $response = Http::withHeaders($hmacData->toArray())->post(...);
 ```
 
-## Middleware Usage
+## Route protection
 
-### Registration
-
-Before using HMAC authentication, you must register the middleware.
-
-In Laravel 12, this is done in `bootstrap/app.php`:
-
-```php
-use Garest\ApiGuard\Http\Middleware\HmacMiddleware;
-
-withMiddleware(function (Middleware $middleware) {
-    $middleware->alias(['ag.hmac' => HmacMiddleware::class]);
-})
-```
-
-### Route
+To secure your routes and ensure that incoming requests are properly authenticated, use the ag.hmac middleware.
 
 ```php
 Route::middleware('ag.hmac')->get('/orders', function () {
@@ -131,20 +116,24 @@ Route::middleware('ag.hmac')->get('/orders', function () {
 });
 ```
 
-Middleware with scopes
+In addition, you can declare a middleware `ag.scopes` or `ag.scopes_or` to check permissions.
 
 ```php
-Route::middleware('ag.hmac:read,write')->get('/orders', function () {
+Route::middleware(['ag.hmac', 'ag.scopes:read'])->get('/orders', function (Request $request) {
+    return response()->json(['ok' => true]);
+});
+
+Route::middleware(['ag.hmac', 'ag.scopes_or:read,write'])->get('/orders', function (Request $request) {
     return response()->json(['ok' => true]);
 });
 ```
 
 ### Accessing the Authenticated Key
 
-Retrieve the `HmacKey` model instance from the request:
+Retrieve the `getHmacKey` model instance from the request:
 
 ```php
-$hmacKey = request()->hmacKey();
+$hmacKey = request()->getHmacKey();
 ```
 
 Check authentication:

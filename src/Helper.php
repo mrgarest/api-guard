@@ -2,8 +2,8 @@
 
 namespace Garest\ApiGuard;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class Helper
 {

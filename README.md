@@ -42,9 +42,7 @@ Full instructions on how to set up and use this method can be found by [clicking
 
 ## Error Rendering
 
-To correctly handle and display errors when calling the API, you need to configure custom rendering of ApiGuardException exceptions.
-
-In Laravel 12, this is done in `bootstrap/app.php`:
+If you want to display custom errors instead of standard ones, you can do so by intercepting the ApiGuardException exception in `bootstrap/app.php`.
 
 ```php
 use Garest\ApiGuard\Exceptions\ApiGuardException;
@@ -57,9 +55,6 @@ withExceptions(function (Exceptions $exceptions) {
             'message' => $e->getMessage(),
         ], $e->status());
     });
-
-    // Disables error logging
-    $exceptions->dontReport([ApiGuardException::class]);
 })
 ```
 

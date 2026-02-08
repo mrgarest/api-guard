@@ -2,10 +2,22 @@
 
 namespace Garest\ApiGuard\Exceptions;
 
+use Garest\ApiGuard\Events\AuthFailed;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use RuntimeException;
 
-abstract class ApiGuardException extends RuntimeException
+abstract class ApiGuardException extends RuntimeException implements HttpExceptionInterface 
 {
+    public function getStatusCode(): int 
+    { 
+        return $this->status(); 
+    }
+
+    public function getHeaders(): array 
+    { 
+        return []; 
+    }
+
     public function status(): int
     {
         return 401;
@@ -14,5 +26,26 @@ abstract class ApiGuardException extends RuntimeException
     public function code(): string
     {
         return 'API_GUARD_ERROR';
+    }
+
+    /**
+     * Error logging.
+     */
+    public function report(): bool
+    {
+        event(new AuthFailed(request(), $this));
+        return true;
+    }
+
+    /**
+     * Converting Exception to JSON response for the client.
+     */
+    public function render()
+    {
+        return response()->json([
+            'status' => $this->status(),
+            'code' => $this->code(),
+            'message' => $this->getMessage(),
+        ], $this->status());
     }
 }

@@ -1,11 +1,10 @@
 <?php
 
-namespace Garest\ApiGuard;
+namespace Garest\ApiGuard\Support;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Garest\ApiGuard\Helper;
-use Garest\ApiGuard\Cache\HmacCacheKey;
 use Garest\ApiGuard\DTO\HmacData;
 use Garest\ApiGuard\Exceptions\InvalidTimestampException;
 use Garest\ApiGuard\Exceptions\InvalidAccessKeyException;
@@ -15,6 +14,8 @@ use Garest\ApiGuard\Models\HmacKey;
 
 class Hmac
 {
+    protected const CACHE_KEY = 'ag:hmac:';
+
     /**
      * Checking the HMAC signature.
      * @param HmacData $data
@@ -45,7 +46,7 @@ class Hmac
     {
         $ttl = config('api-guard.nonce_ttl', 60);
         if ($ttl === null) return;
-        $key = HmacCacheKey::nonce($accessKey, $nonce);
+        $key = $this->nonceCacheKey($accessKey, $nonce);
         if (Cache::has($key)) {
             throw new ReplayDetectedException();
         }
@@ -112,7 +113,7 @@ class Hmac
     public function getKey(string $accessKey): HmacKey
     {
         $ttl = config('api-guard.client_cache_ttl');
-        $cacheKey = HmacCacheKey::accessKey($accessKey);
+        $cacheKey = $this->accessCacheKey($accessKey);
 
         // Get key from cache if this option is enabled
         if ($ttl && $cached = Cache::get($cacheKey)) {
@@ -159,5 +160,39 @@ class Hmac
             $nonce,
             $signature
         );
+    }
+
+    /**
+     * Removes cached HMAC key data.
+     * 
+     * @param string $accessKey
+     * @return bool
+     */
+    public function forgetKey(string $accessKey): bool
+    {
+        return Cache::forget($this->accessCacheKey($accessKey));
+    }
+
+    /**
+     * Generates cache key for storing access key.
+     * 
+     * @param string $accessKey
+     * @return string
+     */
+    public function accessCacheKey(string $accessKey): string
+    {
+        return self::CACHE_KEY . 'access_key:' . md5($accessKey);
+    }
+
+    /**
+     * Generates a cache key to verify the uniqueness of the nonce.
+     *
+     * @param string $accessKey
+     * @param string $nonce
+     * @return string
+     */
+    public function nonceCacheKey(string $accessKey, string $nonce): string
+    {
+        return self::CACHE_KEY . 'nonce:' . md5("$accessKey:$nonce");
     }
 }
