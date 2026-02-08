@@ -36,16 +36,4 @@ abstract class ApiGuardException extends RuntimeException implements HttpExcepti
         event(new AuthFailed(request(), $this));
         return true;
     }
-
-    /**
-     * Converting Exception to JSON response for the client.
-     */
-    public function render()
-    {
-        return response()->json([
-            'status' => $this->status(),
-            'code' => $this->code(),
-            'message' => $this->getMessage(),
-        ], $this->status());
-    }
 }

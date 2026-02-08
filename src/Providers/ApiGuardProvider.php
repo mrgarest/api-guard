@@ -5,9 +5,11 @@ namespace Garest\ApiGuard\Providers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Garest\ApiGuard\Console\Commands\CreateHmacKey;
 use Garest\ApiGuard\Console\Commands\ResetAuthAttemptsCommand;
 use Garest\ApiGuard\Console\Commands\UpdateHmacKey;
+use Garest\ApiGuard\Exceptions\ApiGuardException;
 use Garest\ApiGuard\Http\Middleware\CheckForAnyScope;
 use Garest\ApiGuard\Http\Middleware\AuthHmac;
 use Garest\ApiGuard\Http\Middleware\CheckScopes;
@@ -51,6 +53,24 @@ class ApiGuardProvider extends ServiceProvider
         $this->alias($router);
         $this->macros();
         $this->configurePublishing();
+        $this->registerDefaultRenderers();
+    }
+
+    /**
+     * Registration of standard response format.
+     */
+    protected function registerDefaultRenderers(): void
+    {
+        $this->callAfterResolving(ExceptionHandler::class, function ($handler) {
+            $handler->renderable(function (ApiGuardException $e, $request) {
+                return response()->json([
+                    'success' => false,
+                    'status' => $e->status(),
+                    'code' => $e->code(),
+                    'message' => $e->getMessage(),
+                ], $e->status());
+            });
+        });
     }
 
     /**
