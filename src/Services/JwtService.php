@@ -28,7 +28,7 @@ class JwtService
         // Creating a token
         $expiresIn = config('api-guard.jwt.expires_in', 3600);
         $accessToken = $this->jwt->encode($credential->secret, $expiresIn, [
-            'v' => 1
+            'pf' => $credential->profile
         ]);
 
         return [

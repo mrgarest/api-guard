@@ -50,6 +50,7 @@ class JwtClient extends Model
         'owner_id',
         'owner_type',
         'name',
+        'profile',
         'client_id',
         'secret',
         'revoked',
@@ -62,6 +63,7 @@ class JwtClient extends Model
     protected $casts = [
         'owner_id' => 'integer',
         'name' => 'string',
+        'profile' => 'string',
         'client_id' => 'string',
         'secret'  => Encrypted::class,
         'revoked' => 'boolean',
