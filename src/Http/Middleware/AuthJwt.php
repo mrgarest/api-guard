@@ -4,10 +4,10 @@ namespace Garest\ApiGuard\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Garest\ApiGuard\Exceptions\MissingScopeException;
+use Garest\ApiGuard\Drivers\JwtDriver;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckScopes
+class AuthJwt
 {
     /**
      * Handle an incoming request.
@@ -16,12 +16,11 @@ class CheckScopes
      * 
      * @throws \Garest\ApiGuard\Exceptions\ApiGuardException
      */
-    public function handle(Request $request, Closure $next, ...$scopes): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        $key = $request->getAuthCredential();
-        if (!$key || !$key->hasScope($scopes)) {
-            throw new MissingScopeException();
-        }
+        // Calling the authentication mechanism
+        app(JwtDriver::class)->authenticate($request);
+
         return $next($request);
     }
 }

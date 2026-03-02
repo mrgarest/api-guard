@@ -3,12 +3,15 @@
 namespace Garest\ApiGuard\Drivers;
 
 use Illuminate\Http\Request;
-use Garest\ApiGuard\DTO\HmacData;
+use Garest\ApiGuard\DTO\HmacRequestData;
+use Garest\ApiGuard\Models\HmacKey;
 use Garest\ApiGuard\Support\Hmac;
 
 class HmacDriver
 {
-    public function __construct(protected Hmac $hmac) {}
+    public function __construct(
+        private Hmac $hmac
+    ) {}
 
     /**
      * Preliminary analysis of the request for compliance with authentication requirements.
@@ -30,7 +33,7 @@ class HmacDriver
      */
     public function authenticate($request)
     {
-        $data = HmacData::fromRequest($request);
+        $data = HmacRequestData::fromRequest($request);
 
         // Checking the request time
         $this->hmac->checkTime($data->timestamp);
@@ -39,11 +42,11 @@ class HmacDriver
         $this->hmac->checkReplay($data->accessKey, $data->nonce);
 
         // Get the HMAC secret hash from the database.
-        $hmacKey = $this->hmac->getKey($data->accessKey);
+        $hmacKey = HmacKey::fetchCredential(['access_key' => $data->accessKey]);
 
         // Checking the HMAC signature
         $this->hmac->checkSignature($data, $request->method(), $request->path(), $hmacKey->secret);
 
-        $request->setHmacKey($hmacKey);
+        $request->setAuthCredential($hmacKey);
     }
 }

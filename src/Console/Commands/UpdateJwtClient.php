@@ -3,75 +3,76 @@
 namespace Garest\ApiGuard\Console\Commands;
 
 use Carbon\Carbon;
+use Garest\ApiGuard\Enums\KeyType;
 use Illuminate\Console\Command;
-use Garest\ApiGuard\Models\HmacKey;
+use Garest\ApiGuard\Models\JwtClient;
 use Illuminate\Support\Facades\Cache;
 
-class UpdateHmacKey extends Command
+class UpdateJwtClient extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'ag:hmac-key-update';
+    protected $signature = 'ag:jwt-client-update';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update an existing HMAC access key (revoked, scopes, expires_at)';
+    protected $description = 'Update an existing JWT client (revoked, scopes, expires_at)';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        // Get access_key
-        $accessKey = $this->ask('Enter the Access Key to update');
+        // Get client id
+        $clientId = $this->ask('Enter the client id to update');
 
-        if (!$accessKey) {
-            $this->error('Access Key is required.');
+        if (!$clientId) {
+            $this->error('Сlient id is required.');
             return self::FAILURE;
         }
 
-        $hmacKey = HmacKey::accessKey($accessKey)->first();
+        $client = JwtClient::clientId($clientId)->first();
 
-        if (!$hmacKey) {
-            $this->error("HMAC key with Access Key '$accessKey' not found.");
+        if (!$client) {
+            $this->error("JWT client with client id '$clientId' not found.");
             return self::FAILURE;
         }
 
-        $this->info("Updating key: {$hmacKey->name} ({$accessKey})");
-        $this->line("Current status: " . ($hmacKey->revoked ? 'REVOKED' : 'ACTIVE'));
+        $this->info("Updating client: {$client->name} ({$clientId})");
+        $this->line("Current status: " . ($client->revoked ? 'REVOKED' : 'ACTIVE'));
         $this->newLine();
 
         // Updating status (Revoked)
         if ($this->confirm('Update revoked status?', false)) {
-            $hmacKey->revoked = $this->confirm('Should the key be revoked?', $hmacKey->revoked);
+            $client->revoked = $this->confirm('Should the client be revoked?', $client->revoked);
         }
 
         // Updating Scopes
         if ($this->confirm('Update scopes?', false)) {
-            $currentScopes = $hmacKey->scopes ? implode(', ', $hmacKey->scopes) : 'none';
+            $currentScopes = $client->scopes ? implode(', ', $client->scopes) : 'none';
             $scopesInput = $this->ask("Enter new scopes (comma-separated) [current: $currentScopes]");
 
             if ($scopesInput !== null) {
-                $hmacKey->scopes = array_map('trim', explode(',', $scopesInput));
+                $client->scopes = array_map('trim', explode(',', $scopesInput));
             }
         }
 
         // Updating Expires At
         if ($this->confirm('Update expiration date?', false)) {
-            $currentExpire = $hmacKey->expires_at ? $hmacKey->expires_at->toDateTimeString() : 'never';
+            $currentExpire = $client->expires_at ? $client->expires_at->toDateTimeString() : 'never';
             $expireInput = $this->ask("Enter expiration date (YYYY-MM-DD HH:MM:SS) or 'null' to remove [current: $currentExpire]");
 
             if ($expireInput === 'null') {
-                $hmacKey->expires_at = null;
+                $client->expires_at = null;
             } elseif ($expireInput) {
                 try {
-                    $hmacKey->expires_at = Carbon::parse($expireInput);
+                    $client->expires_at = Carbon::parse($expireInput);
                 } catch (\Exception $e) {
                     $this->error('Invalid date format. Skipping expiration update.');
                 }
@@ -79,12 +80,12 @@ class UpdateHmacKey extends Command
         }
 
         // Cache storage and clearing
-        if ($hmacKey->isDirty()) {
-            $hmacKey->save();
+        if ($client->isDirty()) {
+            $client->save();
 
-            Cache::forget(HmacKey::getCacheKey(['access_key' => $accessKey]));
+            Cache::forget(JwtClient::getCacheKey(['client_id' => $clientId]));
 
-            $this->info('✅ HMAC key updated successfully.');
+            $this->info('✅ JWT client updated successfully.');
         } else {
             $this->comment('No changes were made.');
         }

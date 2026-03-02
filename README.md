@@ -1,15 +1,14 @@
 # ApiGuard (API Authentication for Laravel)
 
-ApiGuard is a lightweight library for Laravel designed for secure API client authentication that does not require the creation or use of user models.
+ApiGuard is a lightweight package for Laravel designed for secure API client authentication that does not require the creation or use of user models.
 
 ## Features
 
-- HMAC request signing (SHA-256)
-- Protection against replay attacks (timestamp + nonce)
-- Client-based authentication (no users)
-- Scope-based authorization
-- Caching for performance
-- Logging failed authentication attempts
+- Client-based authentication (no users).
+- Scope-based authorization.
+- Caching for performance.
+- Logging failed authentication attempts.
+- Blocking clients after failed authentication attempts.
 
 ## Installation
 
@@ -35,10 +34,20 @@ Run migrations:
 php artisan migrate
 ```
 
+Generating an encryption key and automatically adding it to the env file:
+
+```bash
+php artisan ag:key-generate
+```
+
+The generated key is important because it will be used to encrypt data in the database. If you change it, the old keys may not work!
+
 ## Usage
 
-Currently, ApiGuard only supports HMAC authentication.
-Full instructions on how to set up and use this method can be found by [clicking here](https://github.com/mrgarest/api-guard/blob/main/docs/hmac.md).
+Currently, ApiGuard supports two authentication methods for your API:
+
+- [JWT](https://github.com/mrgarest/api-guard/blob/main/docs/jwt.md)
+- [HMAC](https://github.com/mrgarest/api-guard/blob/main/docs/hmac.md)
 
 ## Error Rendering
 

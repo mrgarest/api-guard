@@ -5,12 +5,16 @@ namespace Garest\ApiGuard\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Garest\ApiGuard\Drivers\HmacDriver;
-use Garest\ApiGuard\Facades\AuthAttemptLimiter;
-use Garest\ApiGuard\Helper;
+use Garest\ApiGuard\Facades\Client;
+use Garest\ApiGuard\Support\Limiter;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthHmac
 {
+    public function __construct(
+        private Limiter $limiter
+    ) {}
+
     /**
      * Handle an incoming request.
      *
@@ -20,8 +24,8 @@ class AuthHmac
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check whether authentication is locked for the given IP address
-        AuthAttemptLimiter::checkLock(Helper::getIp($request));
+        // Checks whether the key is blocked. If it is blocked, it throws an error.
+        $this->limiter->checkBlocked(Client::ip($request));
 
         // Calling the authentication mechanism
         app(HmacDriver::class)->authenticate($request);

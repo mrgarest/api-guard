@@ -5,7 +5,7 @@ namespace Garest\ApiGuard\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Garest\ApiGuard\Events\AuthFailed;
-use Garest\ApiGuard\Helper;
+use Garest\ApiGuard\Facades\Client;
 
 /**
  * @property int $id
@@ -47,7 +47,7 @@ class FailedAuth extends Model
      */
     public static function createFromEvent(AuthFailed $event)
     {
-        $ip = Helper::getIp($event->request);
+        $ip = Client::ip($event->request);
         $now = Carbon::now();
         self::create([
             'ip_address' => $ip,

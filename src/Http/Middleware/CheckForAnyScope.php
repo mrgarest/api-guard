@@ -18,8 +18,8 @@ class CheckForAnyScope
      */
     public function handle(Request $request, Closure $next, ...$scopes): Response
     {
-        $hmacKey = $request->getHmacKey();
-        if (!$hmacKey || !$hmacKey->hasAnyScope($scopes)) {
+        $key = $request->getAuthCredential();
+        if (!$key || !$key->hasAnyScope($scopes)) {
             throw new MissingScopeException();
         }
         return $next($request);

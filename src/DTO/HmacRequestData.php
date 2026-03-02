@@ -9,7 +9,7 @@ use Garest\ApiGuard\Exceptions\MissingHeadersException;
  * DTO for storing HMAC request data.
  * Responsible for extracting headers and basic validation.
  */
-class HmacData
+class HmacRequestData
 {
     /** 
      * Public access key. 

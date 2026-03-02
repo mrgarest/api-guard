@@ -2,6 +2,20 @@
 
 This is a simplified HMAC authentication method. It protects API endpoints by verifying requests from trusted clients and helps detect and block malicious access attempts.
 
+## Migrations
+
+In addition to the main migration, when installing the package, you need to publish the migration for HMAC:
+
+```bash
+php artisan vendor:publish --tag=api-guard-hmac-migration
+```
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
 ## Managing Access Keys
 
 Create a new HMAC access key using the Artisan command:
@@ -108,7 +122,7 @@ $response = Http::withHeaders($hmacData->toArray())->post(...);
 
 ## Route protection
 
-To secure your routes and ensure that incoming requests are properly authenticated, use the ag.hmac middleware.
+To secure your routes and ensure that incoming requests are properly authenticated, use the `ag.hmac` middleware.
 
 ```php
 Route::middleware('ag.hmac')->get('/orders', function () {
@@ -130,16 +144,16 @@ Route::middleware(['ag.hmac', 'ag.scopes_or:read,write'])->get('/orders', functi
 
 ### Accessing the Authenticated Key
 
-Retrieve the `getHmacKey` model instance from the request:
+Retrieve the `getAuthCredential` model instance from the request:
 
 ```php
-$hmacKey = request()->getHmacKey();
+$credential = request()->getAuthCredential();
 ```
 
 Check authentication:
 
 ```php
-if (request()->hasHmacKey()) {
+if (request()->hasAuthCredential()) {
     //
 }
 ```

@@ -3,53 +3,54 @@
 namespace Garest\ApiGuard\Models;
 
 use Carbon\Carbon;
+use Garest\ApiGuard\Casts\Encrypted;
 use Garest\ApiGuard\Traits\HasAuthCredential;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @property int $id
+ * @property string|null $owner_type
+ * @property int|null $owner_id
  * @property string $name
- * @property string $access_key
- * @property string $secret
+ * @property string $client_id
+ * @property $secret
  * @property bool $revoked
  * @property array<array-key, mixed>|null $scopes
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $expires_at
- * @property-read Model|\Eloquent $owner
- * @method static Builder<static>|HmacKey accessKey($value)
- * @method static Builder<static>|HmacKey newModelQuery()
- * @method static Builder<static>|HmacKey newQuery()
- * @method static Builder<static>|HmacKey notExpired()
- * @method static Builder<static>|HmacKey notRevoked()
- * @method static Builder<static>|HmacKey query()
- * @method static Builder<static>|HmacKey whereAccessKey($value)
- * @method static Builder<static>|HmacKey whereCreatedAt($value)
- * @method static Builder<static>|HmacKey whereExpiresAt($value)
- * @method static Builder<static>|HmacKey whereId($value)
- * @method static Builder<static>|HmacKey whereName($value)
- * @method static Builder<static>|HmacKey whereRevoked($value)
- * @method static Builder<static>|HmacKey whereScopes($value)
- * @method static Builder<static>|HmacKey whereSecret($value)
- * @method static Builder<static>|HmacKey whereUpdatedAt($value)
- * @property string|null $owner_type
- * @property int|null $owner_id
- * @method static Builder<static>|HmacKey whereOwnerId($value)
- * @method static Builder<static>|HmacKey whereOwnerType($value)
+ * @property-read Model|\Eloquent|null $owner
+ * @method static Builder<static>|JwtClient clientId(string $value)
+ * @method static Builder<static>|JwtClient newModelQuery()
+ * @method static Builder<static>|JwtClient newQuery()
+ * @method static Builder<static>|JwtClient notExpired()
+ * @method static Builder<static>|JwtClient notRevoked()
+ * @method static Builder<static>|JwtClient query()
+ * @method static Builder<static>|JwtClient whereClientId($value)
+ * @method static Builder<static>|JwtClient whereCreatedAt($value)
+ * @method static Builder<static>|JwtClient whereExpiresAt($value)
+ * @method static Builder<static>|JwtClient whereId($value)
+ * @method static Builder<static>|JwtClient whereName($value)
+ * @method static Builder<static>|JwtClient whereOwnerId($value)
+ * @method static Builder<static>|JwtClient whereOwnerType($value)
+ * @method static Builder<static>|JwtClient whereRevoked($value)
+ * @method static Builder<static>|JwtClient whereScopes($value)
+ * @method static Builder<static>|JwtClient whereSecret($value)
+ * @method static Builder<static>|JwtClient whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class HmacKey extends Model
+class JwtClient extends Model
 {
     use HasAuthCredential;
 
-    protected $table = 'ag_hmac_keys';
+    protected $table = 'ag_jwt_clients';
 
     protected $fillable = [
         'owner_id',
         'owner_type',
         'name',
-        'access_key',
+        'client_id',
         'secret',
         'revoked',
         'scopes',
@@ -61,8 +62,8 @@ class HmacKey extends Model
     protected $casts = [
         'owner_id' => 'integer',
         'name' => 'string',
-        'access_key' => 'string',
-        'secret' => 'string',
+        'client_id' => 'string',
+        'secret'  => Encrypted::class,
         'revoked' => 'boolean',
         'scopes' => 'array',
         'created_at' => 'datetime',
@@ -76,15 +77,15 @@ class HmacKey extends Model
     }
 
     /**
-     * Public Access Key.
+     * Client identifier.
      *
      * @param Builder $query
      * @param string $value
      * @return Builder
      */
-    public function scopeAccessKey(Builder $query, $value): Builder
+    public function scopeClientId(Builder $query, string $value): Builder
     {
-        return $query->where('access_key', $value);
+        return $query->where('client_id', $value);
     }
 
     /**
