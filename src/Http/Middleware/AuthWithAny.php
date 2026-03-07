@@ -14,8 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthWithAny
 {
     protected array $map = [
-        'hmac' => HmacDriver::class,
-        'jwt' => JwtDriver::class
+        'jwt' => JwtDriver::class,
+        'hmac' => HmacDriver::class
     ];
 
     public function __construct(

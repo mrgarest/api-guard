@@ -2,7 +2,6 @@
 
 namespace Garest\ApiGuard\Traits;
 
-use Carbon\Carbon;
 use Garest\ApiGuard\Exceptions\InvalidTokenException;
 use Illuminate\Support\Facades\Cache;
 
@@ -44,7 +43,7 @@ trait HasAuthCredential
         $fetcher = fn() => static::where($queryParams)->first()?->getAttributes();
 
         // Get raw attributes from cache or database
-        $attributes = $ttl > 0 ? Cache::remember($cacheKey, Carbon::now()->addSeconds($ttl), $fetcher) : $fetcher();
+        $attributes = $ttl > 0 ? Cache::remember($cacheKey, $ttl, $fetcher) : $fetcher();
 
         // If nothing was found, error
         if (!$attributes) throw new InvalidTokenException();
@@ -54,7 +53,7 @@ trait HasAuthCredential
 
         // Validity check
         if ($credential->isRevoked() || $credential->isExpired()) {
-            Cache::forget($cacheKey);
+            if ($ttl > 0) Cache::forget($cacheKey);
             throw new InvalidTokenException();
         }
 
@@ -63,7 +62,6 @@ trait HasAuthCredential
 
     public static function getCacheKey(array $queryParams): string
     {
-        $hash = sha1(json_encode($queryParams));
-        return "ag:" . class_basename(static::class) . ":{$hash}";
+        return 'ag:' . class_basename(static::class) . ':' . md5(implode(':', $queryParams));
     }
 }

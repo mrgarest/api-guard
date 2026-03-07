@@ -2,7 +2,6 @@
 
 namespace Garest\ApiGuard\Support;
 
-use Carbon\Carbon;
 use Garest\ApiGuard\Exceptions\InvalidSignatureException;
 use Garest\ApiGuard\Exceptions\InvalidTokenException;
 use Garest\ApiGuard\Exceptions\TokenExpiredException;
@@ -18,7 +17,7 @@ class Jwt
      */
     private function base64UrlEncode(string $data): string
     {
-        return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($data));
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     /**
@@ -29,9 +28,7 @@ class Jwt
      */
     private function base64UrlDecode(string $data): ?string
     {
-        $remainder = strlen($data) % 4;
-        if ($remainder) $data .= str_repeat('=', 4 - $remainder);
-        return base64_decode(str_replace(['-', '_'], ['+', '/'], $data)) ?: null;
+        return base64_decode(strtr($data, '-_', '+/'), true) ?: null;
     }
 
     /**
@@ -45,23 +42,23 @@ class Jwt
     public function encode(string $secret, int $expiresIn = 3600, array $data = []): string
     {
         // Header
-        $header = $this->base64UrlEncode(json_encode([
-            'alg' => 'HS256',
-            'typ' => 'JWT'
-        ]));
+        // $header = $this->base64UrlEncode(json_encode([
+        //     'alg' => 'HS256',
+        //     'typ' => 'JWT'
+        // ]));
+        $header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 
-        $now = Carbon::now();
+        $now = time();
 
         // Payload
         $payload = $this->base64UrlEncode(json_encode(array_merge([
-            'iat' => $now->timestamp,
-            'exp' => $now->addSeconds($expiresIn)->timestamp,
+            'iat' => $now,
+            'exp' => $now + $expiresIn,
             'jti' => bin2hex(random_bytes(8))
         ], $data)));
 
         // Signature
-        $signature = hash_hmac('sha256', "$header.$payload", $secret, true);
-        $base64Signature = $this->base64UrlEncode($signature);
+        $base64Signature = $this->base64UrlEncode(hash_hmac('sha256', "$header.$payload", $secret, true));
 
         return "$header.$payload.$base64Signature";
     }
@@ -94,7 +91,7 @@ class Jwt
         }
 
         $decodedPayload = json_decode($this->base64UrlDecode($payload), true);
-        $nowTimestamp = Carbon::now()->timestamp;
+        $nowTimestamp = time();
 
         // Verifying that the token has not expired
         if (!isset($decodedPayload['exp']) || $nowTimestamp > $decodedPayload['exp']) {

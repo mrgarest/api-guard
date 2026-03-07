@@ -2,14 +2,12 @@
 
 namespace Garest\ApiGuard\Http\Controllers;
 
-use Garest\ApiGuard\Exceptions\BadRequestException;
 use Garest\ApiGuard\Exceptions\InvalidClientException;
 use Garest\ApiGuard\Exceptions\InvalidGrantTypeException;
 use Garest\ApiGuard\Facades\Client;
 use Garest\ApiGuard\Http\Resources\SuccessResource;
 use Garest\ApiGuard\Services\JwtService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class TokenController
 {
@@ -19,27 +17,20 @@ class TokenController
 
     public function __invoke(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'grant_type' => 'required|string|in:jwt_token',
-            'client_id' => 'required|string',
-        ]);
+        $clientId = $request->input('client_id');
+        $grantType = $request->input('grant_type');
 
-        // Error handling
-        if ($validator->fails()) {
-            $field = $validator->errors()->keys()[0];
-
-            match ($field) {
-                'grant_type' => throw new InvalidGrantTypeException(),
-                'client_id' => throw new InvalidClientException(),
-                default => throw new BadRequestException()
-            };
+        // Validation
+        if (!$clientId) {
+            throw new InvalidClientException();
         }
 
-        // Data after validation
-        $data = $validator->validated();
+        if (!$grantType || $grantType !== 'jwt_token') {
+            throw new InvalidGrantTypeException();
+        }
 
         $token = $this->jwtService->getToken(
-            clientId: $data['client_id'],
+            clientId: $clientId,
             ip: Client::ip($request)
         );
 
